@@ -1,0 +1,186 @@
+platform :ios, '16.0'
+
+require 'fileutils'
+
+# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+project 'Runner', {
+  'Debug' => :debug,
+  'Profile' => :release,
+  'Release' => :release,
+}
+
+def flutter_root
+  generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
+  unless File.exist?(generated_xcode_build_settings_path)
+    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
+  end
+
+  File.foreach(generated_xcode_build_settings_path) do |line|
+    matches = line.match(/FLUTTER_ROOT\=(.*)/)
+    return matches[1].strip if matches
+  end
+  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
+end
+
+require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
+
+flutter_ios_podfile_setup
+
+# Create missing Firestore/LICENSE and core/include header (runs after download, before generate)
+pre_install do |installer|
+  firestore_internal = installer.sandbox.pod_dir('FirebaseFirestoreInternal')
+  if firestore_internal && File.directory?(firestore_internal)
+    root = firestore_internal.to_s
+    # Firestore/LICENSE for CocoaPods license read
+    firestore_dir = File.join(root, 'Firestore')
+    license_dest = File.join(firestore_dir, 'LICENSE')
+    unless File.file?(license_dest)
+      firebase_core = installer.sandbox.pod_dir('FirebaseCore')
+      firebase_core_license = firebase_core ? File.join(firebase_core.to_s, 'LICENSE') : nil
+      if firebase_core_license && File.file?(firebase_core_license)
+        FileUtils.mkdir_p(firestore_dir)
+        FileUtils.cp(firebase_core_license, license_dest)
+      end
+    end
+    # Firestore/core/include/firebase/firestore/firestore_errors.h (missing in pod distribution)
+    include_dest = File.join(root, 'Firestore', 'core', 'include', 'firebase', 'firestore', 'firestore_errors.h')
+    unless File.file?(include_dest)
+      patch_h = File.join(File.dirname(File.realpath(__FILE__)), 'patches', 'firestore_errors.h')
+      if File.file?(patch_h)
+        FileUtils.mkdir_p(File.dirname(include_dest))
+        FileUtils.cp(patch_h, include_dest)
+      end
+    end
+    # Firestore/Protos/nanopb (e.g. google/firestore/v1/document.nanopb.h) — missing in pod distribution
+    protos_nanopb_dest = File.join(root, 'Firestore', 'Protos', 'nanopb')
+    unless File.file?(File.join(protos_nanopb_dest, 'google', 'firestore', 'v1', 'document.nanopb.h'))
+      patches_protos = File.join(File.dirname(File.realpath(__FILE__)), 'patches', 'Protos_nanopb')
+      if File.directory?(patches_protos)
+        FileUtils.mkdir_p(protos_nanopb_dest)
+        Dir.entries(patches_protos).each do |e|
+          next if e == '.' || e == '..'
+          FileUtils.cp_r(File.join(patches_protos, e), protos_nanopb_dest)
+        end
+      else
+        # One-time: run fetch script to populate patches/Protos_nanopb
+        script = File.join(File.dirname(File.realpath(__FILE__)), 'scripts', 'fetch_firestore_protos_nanopb.sh')
+        if File.executable?(script) && system(script)
+          FileUtils.mkdir_p(protos_nanopb_dest)
+          Dir.entries(patches_protos).each do |e|
+            next if e == '.' || e == '..'
+            FileUtils.cp_r(File.join(patches_protos, e), protos_nanopb_dest)
+          end
+        end
+      end
+    end
+  end
+end
+
+target 'Runner' do
+  use_frameworks! :linkage => :static
+
+  # Ensure FirebaseAppCheckInterop is installed so FirebaseFirestoreInternal can find its header
+  pod 'FirebaseAppCheckInterop', '~> 11.0'
+
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  target 'RunnerTests' do
+    inherit! :search_paths
+  end
+end
+
+post_install do |installer|
+  # Patch BoringSSL-GRPC: pod sometimes ships without crypto/asn1; add missing asn1/internal.h
+  bssl_root = installer.sandbox.pod_dir('BoringSSL-GRPC')
+  if bssl_root && File.directory?(bssl_root)
+    asn1_dir = File.join(bssl_root.to_s, 'src', 'crypto', 'asn1')
+    asn1_internal = File.join(asn1_dir, 'internal.h')
+    unless File.file?(asn1_internal)
+      FileUtils.mkdir_p(asn1_dir)
+      url = 'https://raw.githubusercontent.com/google/boringssl/master/crypto/asn1/internal.h'
+      begin
+        require 'open-uri'
+        content = URI.open(url, read_timeout: 10).read
+        content = content.gsub('<openssl/', '<openssl_grpc/')
+        content = content.gsub('BSSL_NAMESPACE_BEGIN', '')
+        content = content.gsub('BSSL_NAMESPACE_END', '')
+        File.write(asn1_internal, content)
+        puts "Patched BoringSSL-GRPC: added #{asn1_internal}"
+      rescue => e
+        puts "Warning: could not patch BoringSSL-GRPC asn1 (#{e.message})"
+      end
+    end
+    # Also add crypto/internal.h if missing (required by x509 and dsa)
+    crypto_internal = File.join(bssl_root.to_s, 'src', 'crypto', 'internal.h')
+    unless File.file?(crypto_internal)
+      url = 'https://raw.githubusercontent.com/google/boringssl/master/crypto/internal.h'
+      begin
+        require 'open-uri'
+        content = URI.open(url, read_timeout: 10).read
+        content = content.gsub('<openssl/', '<openssl_grpc/')
+        content = content.gsub('BSSL_NAMESPACE_BEGIN', '')
+        content = content.gsub('BSSL_NAMESPACE_END', '')
+        File.write(crypto_internal, content)
+        puts "Patched BoringSSL-GRPC: added #{crypto_internal}"
+      rescue => e
+        puts "Warning: could not patch BoringSSL-GRPC crypto/internal.h (#{e.message})"
+      end
+    end
+  end
+
+  # BoringSSL-GRPC: remove params.c from build when pod ships without it (upstream removed/renamed)
+  bssl_root = installer.sandbox.pod_dir('BoringSSL-GRPC')
+  if bssl_root && !File.file?(File.join(bssl_root.to_s, 'src', 'crypto', 'dh_extra', 'params.c'))
+    installer.pods_project.targets.each do |target|
+      next unless target.name.include?('BoringSSL-GRPC')
+      target.source_build_phase.files.to_a.each do |bf|
+        if bf.file_ref && bf.file_ref.path && bf.file_ref.path.include?('params.c')
+          target.source_build_phase.remove_build_file(bf)
+          puts "Podfile: removed missing params.c from #{target.name}"
+          break
+        end
+      end
+    end
+  end
+
+  # Ensure FirebaseFirestoreInternal can find FirebaseAppCheckInterop headers (static linkage)
+  app_check_interop_dir = installer.sandbox.pod_dir('FirebaseAppCheckInterop')
+  if app_check_interop_dir && File.directory?(app_check_interop_dir)
+    pod_root = app_check_interop_dir.to_s
+    installer.pods_project.targets.each do |target|
+      if target.name == 'FirebaseFirestoreInternal'
+        target.build_configurations.each do |config|
+          current = config.build_settings['HEADER_SEARCH_PATHS'] || '$(inherited)'
+          config.build_settings['HEADER_SEARCH_PATHS'] = "#{current} \"#{pod_root}\""
+        end
+        break
+      end
+    end
+  end
+
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      # Xcode 26+ requires arm64. Only exclude i386 (obsolete) for simulator; do not exclude arm64.
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'i386'
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphoneos*]'] = ''
+      # Xcode 26+ requires deployment target 12.0–26.2.99; many pods default to 9.0/10.0/11.0
+      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 12.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
+      end
+      # Fix leveldb-library: double-quoted includes in framework headers (use angle-bracketed)
+      config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
+      # Fix leveldb-library: ensure C++ stdlib (cstdint) is available
+      if target.name == 'leveldb-library'
+        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+        config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
+      end
+    end
+  end
+  # Apply quoted-include fix to Pods project so module verification passes
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
+    config.build_settings['DEVELOPMENT_TEAM'] = 'MU5G9PHHR4'
+  end
+end

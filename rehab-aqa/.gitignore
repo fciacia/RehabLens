@@ -1,0 +1,29 @@
+# RYO — Real-time Your Own coach
+
+# Flutter build artifacts
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+*.g.dart
+*.freezed.dart
+
+# Environment / secrets
+.env
+*.env
+google-services.json
+GoogleService-Info.plist
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# macOS
+.DS_Store
+
+# Python (backend proxy)
+__pycache__/
+*.py[cod]
+*.pyo
