@@ -46,7 +46,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
 
-    final accent = context.ryoAccent;
     final bg = context.ryoBg;
 
     return Scaffold(

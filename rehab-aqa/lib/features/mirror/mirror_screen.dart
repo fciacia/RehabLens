@@ -13,7 +13,6 @@ import 'package:flutter/foundation.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
-import 'package:ryo/core/layout/adaptive_scaffold.dart';
 import 'package:ryo/core/theme/ryo_theme.dart';
 import 'package:ryo/core/vision/camera_service.dart';
 import 'package:ryo/core/vision/rep_detector.dart';

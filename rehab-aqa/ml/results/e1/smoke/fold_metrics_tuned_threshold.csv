@@ -1,0 +1,2 @@
+model,exercise,fold,accuracy,sensitivity,specificity,balanced_accuracy,f1,auroc,tp,tn,fp,fn
+tcn,deep_squat,0,0.7222222222222222,1.0,0.4444444444444444,0.7222222222222222,0.782608695652174,1.0,18,8,10,0

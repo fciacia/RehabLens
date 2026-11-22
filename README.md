@@ -20,6 +20,22 @@ The proposal (Felicia Sia Xin Rou, supervised by Wai Lam Hoo, UM) describes a ph
 
 `docs/EDIT_PLAN.md` already lists *what* to change, file by file. This plan adds *how* and *in what order*. It gives exact interfaces, formulas, fixes for pitfalls the proposal leaves unresolved, a done-check for every step, and a schedule week by week. Where the two disagree, this plan wins, and the reason is given each time.
 
+
+## Status (22 Nov 2026)
+
+| Phase | State |
+|---|---|
+| 0. App builds | Done: `flutter analyze` clean, tests pass, iOS release build compiles without signing. Not yet run on the iPhone. |
+| 1. Data and EDA | UI-PRMD loader, tests and EDA done. REHAB24-6 download needed a resume (first attempt stopped at about 5 MB); no loader yet. DeepRehabPile reproduction done (72.2%, matches). |
+| 2. Preprocessing and parity | Done: `ml/rehab/preprocess.py`, `lib/core/aqa/preprocess.dart`, 7 fixtures, Dart and Python agree within 1e-4. |
+| 3. Models and E1 | Rules and Random Forest done; TCN, augmentation, nested CV and summary scripts written; full TCN run (8-config grid) started. DeepRehabPile re-runs of the other deep models not started. |
+| 4. E2 | Not started (needs the REHAB24-6 download and loader). |
+| 5. App integration | Started: `lib/core/aqa/` has the spec loader, preprocessing, ML Kit frame adapter and pose buffer. Classifier, segmenter, cues, storage and screens not started. |
+| 6. Export and E3 | The int8 TFLite export of the TCN is checked (72 KB, integer inside); nothing deployed. |
+| 7. Report | Not started. |
+
+First E1 baseline numbers (23 folds, mean over exercises): Random Forest 80.2% accuracy / 0.90 sensitivity at threshold 0.5, rules 74.7% / 0.67. At the sensitivity-favouring threshold, Random Forest gives 73.4% / 0.97. A simple Random Forest already passes the 78.8% published mean (but not the 71.3% inline-lunge target: 68.5%), so the TCN's case rests on sensitivity, the parameter budget and the phone results as well as accuracy.
+
 ---
 
 ## Fixed decisions
@@ -38,7 +54,7 @@ The proposal (Felicia Sia Xin Rou, supervised by Wai Lam Hoo, UM) describes a ph
 ## Pitfalls the proposal does not resolve, and the fixes this plan uses
 
 1. **Per-frame rotation erases trunk lean.** If `R` in Eq. 1 is rebuilt every frame from the trunk, the trunk is always vertical, so the "trunk lean" angle is always 0 and positions lose forward lean.
-   **Fix:** compute `R` **once per repetition** from the median pose of the rep's first 10 frames (the start posture). Compute trunk lean against the *sensor/camera vertical* before rotating. This assumes the phone is upright, so the app checks tilt with the accelerometer, or simply asks the user to stand the phone upright.
+   **Fix:** compute `R` **once per repetition** from the mean pose of the rep's first 10 frames (a coordinate-wise median does not rotate with the points and broke rotation invariance) (the start posture). Compute trunk lean against the *sensor/camera vertical* before rotating. This assumes the phone is upright, so the app checks tilt with the accelerometer, or simply asks the user to stand the phone upright.
 2. **Filter state differs between offline and live.** UI-PRMD reps arrive already cut; the app sees a continuous stream.
    **Fix:** in both, run `sosfilt` **on the rep window only**, with `zi = sosfilt_zi(sos) * x[0]`. Pad 15 frames (0.5 s) before the window when the data has them. The app always has them; for UI-PRMD, pad by repeating the first frame.
 3. **Coordinate units differ between sources.** ML Kit gives pixel x and y, plus a z on roughly the same scale as x. MediaPipe gives x and y as fractions of the image, and z on the scale of x. Kinect gives metres with y pointing up.
@@ -88,33 +104,33 @@ rehab-aqa/
 
 1. `cd rehab-aqa && flutter pub get && flutter analyze && flutter test`. Fix anything Part A left broken: imports of deleted files, providers that no longer exist, and the `stats_screen` empty states.
 2. `cd ios && pod install`, then `flutter run --release` on the iPhone. Confirm the camera, the ML Kit skeleton overlay and the rep counting still work for squats.
-3. Delete `ios/patches/Protos_nanopb/**`, `ios/scripts/fetch_firestore_protos_nanopb.sh` and the Firestore parts of `scripts/fix_ios*.sh`. These only existed for Firebase. Check the `Podfile` has no Firebase pods left.
+3. Delete `ios/patches/`, `ios/scripts/fetch_firestore_protos_nanopb.sh` and `scripts/fix_ios.sh` (an empty file). Rewrite `ios/Podfile` without the Firestore/BoringSSL patch blocks, delete `Podfile.lock`, and remove the dangling `GoogleService-Info.plist` entries from `Runner.xcodeproj/project.pbxproj`.
 4. Rename the app (EDIT_PLAN B13): the display name in `Info.plist` and the Android label. Keep the Dart package name `ryo` for now to avoid churn, or rename it in one commit with `sed` across imports.
 5. Add the dependencies: `sqflite`, `tflite_flutter` (check the current version and whether it is now published as LiteRT), `fl_chart` (optional), `sensors_plus` (for the tilt check in pitfall 1).
 6. Add `ml/data/`, `ml/results/raw/` and `*.tflite.tmp` to `.gitignore`.
 
-**Done when:** `flutter analyze` is clean, the tests pass, and the app runs on the iPhone. Commit.
+**Done when:** `flutter analyze` is clean, the tests pass, and the app runs on the iPhone. (The assistant never commits or pushes; commit manually.)
 
 ---
 
 ## Phase 1: Data and Python environment (weeks 1–3)
 
 ### 1.1 Environment
-- Create `ml/environment.yml`: python=3.11, tensorflow (Apple silicon: `tensorflow` + `tensorflow-metal`), numpy, scipy, pandas, scikit-learn, matplotlib, seaborn, mediapipe, opencv-python, pytest, tqdm, pyyaml, statsmodels.
+- `ml/environment.yml` (conda env `rehablens`, python 3.11): tensorflow 2.20 and keras 3.15 (CPU only; `tensorflow-metal` was not used), numpy 2.3, scipy, pandas, scikit-learn, matplotlib, statsmodels, mediapipe, opencv-python, pytest, tqdm, pyyaml, and aeon 1.4 + hydra-core + omegaconf so the DeepRehabPile code runs in the same env (installed with `pip install --no-deps -e ml/deeprehabpile`). seaborn was dropped.
 - Make `ml/rehab` installable (`pip install -e ml`) so scripts and tests share code.
 - Seed everything through `rehab/config.py::set_seed(s)`, covering numpy, TF and Python `random`.
 
 ### 1.2 Get the data (document in `ml/scripts/00_download.md`; data stays out of git)
-- **DeepRehabPile:** clone `github.com/MSD-IRIMAS/DeepRehabPile` into `ml/deeprehabpile/`. Download its preprocessed UI-PRMD data, the fold files and the published per-fold results CSVs.
-- **UI-PRMD raw** (Vakanski et al.): only if the DeepRehabPile copy has already been normalised in a way that blocks our pipeline. Check this first (1.3).
+- **DeepRehabPile:** clone `github.com/MSD-IRIMAS/DeepRehabPile` into `ml/deeprehabpile/` (gitignored). Download only the 4 UI-PRMD sets (`DS`, `IL`, `SSA`, `STS`, about 130 MB) with the commands in `ml/scripts/00_download.md`. Published per-fold results are in its `results/*.csv`.
+- **UI-PRMD raw** (Vakanski et al.): not needed. The DeepRehabPile arrays are usable as they are (see 1.3).
 - **REHAB24-6** (Černek et al., Zenodo): the videos from both cameras, the rep segmentation and labels, and the mocap skeletons. Record the licence (non-commercial research).
 
 ### 1.3 Loaders, with tests (`rehab/io_uiprmd.py`, `rehab/io_rehab24.py`, `rehab/joint_maps.py`)
-- Common sample record: `Rep(subject:str, exercise:str, label:int, source:str, joints:np.ndarray[T,J,3], conf:np.ndarray[T,J]|None, fps:float, rep_id:str)`.
+- Common sample record (`rehab/types.py`): `Rep(rep_id, subject, exercise, label, source, joints[T,J,3], conf[T,J]|None, t_ms[T]|None, meta)`.
 - `joint_maps.py`: a dict per source mapping to the 12 shared joints, in the order `L/R shoulder, L/R elbow, L/R wrist, L/R hip, L/R knee, L/R ankle`. Add heel and toe for the ablation where a source has them. **Check each mapping by plotting one frame per source**, with labels, into `ml/results/figs/joint_check_*.png`. Wrong L/R mappings are the most common silent bug.
-- UI-PRMD: confirm the 4 target exercises give 180/102/168/126 reps, 576 in total, and that the folds total 5+6+5+7 = 23. Find out exactly what preprocessing DeepRehabPile already applied (resampling? normalisation?) and write it down.
-- REHAB24-6: map Ex1 arm abduction → `shoulder_abduction`, Ex5 lunge → `inline_lunge`, Ex6 squat → `deep_squat`. Cut reps from the annotations. Count reps per class and per subject.
-- **Reproduce one baseline number.** Run DeepRehabPile LITEMV on one UI-PRMD exercise and one fold with the authors' script, and get within ~2 points of their CSV. This proves the folds and data are being read correctly. Do it before anything else is built on top.
+- UI-PRMD (done, `tests/test_io_uiprmd.py`): 180/102/168/126 reps, 576 in total, 5+6+5+7 = 23 folds, no person in both train and test. What DeepRehabPile already applied: every rep is **already resampled to a fixed length** (81, 77, 88 and 74 frames), so real duration and timestamps are lost and `t_ms` is `None`; units are cm, y up; no normalisation. **Label 1 = incorrect** (verified: more trunk lean in all four exercises, less abduction in SSA). Shoulder abduction is the right arm. Joint order and L/R mapping are documented in `rehab/joint_maps.py`.
+- REHAB24-6: map Ex1 arm abduction → `shoulder_abduction`, Ex5 lunge → `inline_lunge`, Ex6 squat → `deep_squat`. Cut reps from `Segmentation.csv` (`;`-separated). **`correctness` is 1 = correct, the opposite of the project label**, so flip it. Counts from the csv: Ex1 90 correct / 88 incorrect (9 people), Ex5 78 / 96 (8 people), Ex6 134 / 61 (9 people); front and half-profile views for Ex1, Ex5 and Ex6 (Ex3 is profile only). `io_rehab24.py` is not written yet.
+- **Reproduce one baseline number** (done). Run DeepRehabPile LITEMV on one UI-PRMD exercise and one fold with the authors' script, and get within ~2 points of their CSV. Deep squat fold 0, 5 runs: 69.4–72.2% each, ensemble 72.2%, equal to the published value. This proves the folds and data are being read correctly. Do it before anything else is built on top.
 
 ### 1.4 EDA (`scripts/01_eda.py`; save figures to `results/figs/eda/`)
 1. Size and balance: reps by exercise × label × subject (table plus heatmap).
@@ -122,7 +138,7 @@ rehab-aqa/
 3. Separability: mean ± SD curves of key angles, correct vs incorrect (knee and trunk for squat/lunge/STS, shoulder for abduction), plus effect sizes (Cohen's d) on peak angles.
 4. BlazePose quality, after Phase 4.1: the share of frames below 0.5 per joint, per exercise and per camera.
 
-**Done when:** the loaders pass `ml/tests/test_io.py` (shapes, counts, label balance), one DeepRehabPile number is reproduced, and the EDA figures exist.
+**Done when:** the loaders pass `ml/tests/test_io_uiprmd.py` (shapes, counts, label balance), one DeepRehabPile number is reproduced, and the EDA figures exist. EDA for UI-PRMD (questions i to iii) is done: `results/figs/eda/` and `results/eda_*.csv`; the 100-frame round-trip error is at most 3.0 degrees (inline lunge). Question iv waits for BlazePose landmarks.
 
 ---
 
@@ -159,7 +175,7 @@ rehab-aqa/
 4. `butter_causal(x)`: `sosfilt` per channel with `zi = sosfilt_zi*x[0]`. (Pitfall 2.)
 5. `to_canonical(x, source)`: unit and axis conversion. (Pitfall 3.)
 6. `trunk_lean(x)`: angle between (mid_shoulder − mid_hip) and +y, in degrees, computed **before** rotation.
-7. `normalise(x)`: origin at mid-hip per frame. `s` = the median over the rep of |mid_shoulder − mid_hip|. A per-rep median keeps bone-length jitter (Leuthold) out of the scaling. `R` is built from the median of the first 10 frames by Gram–Schmidt: `y = unit(mid_sh − mid_hip)`, `x = unit((r_hip − l_hip) − proj_y)`, `z = x × y`. **2D mode:** drop z and use only the in-plane rotation that makes the trunk vertical in the reference frames.
+7. `normalise(x)`: origin at mid-hip per frame. `s` = the median over the rep of |mid_shoulder − mid_hip|. A per-rep median keeps bone-length jitter (Leuthold) out of the scaling. `R` is built from the **mean** of the first 10 frames by Gram–Schmidt: `y = unit(mid_sh − mid_hip)`, `x = unit((r_hip − l_hip) − proj_y)`, `z = x × y`. **2D mode:** drop z and use only the in-plane rotation that makes the trunk vertical in the reference frames.
 8. `joint_angles(x)`: 8 three-point angles via `atan2(|u×v|, u·v)`, which is numerically stable, plus trunk lean from step 6.
 9. `resample_frames(x, 100)` → concatenate `[100, 36]` positions and `[100, 9]` angles → `[100, 45]` → z-score.
 - Expose `preprocess_rep(raw, spec) -> (tensor | None, meta{reject_reason, peak_angles, missing_frac})`.
@@ -191,7 +207,7 @@ Block(in=48,out=64,d=1): DepthwiseConv1D(k=7,d) → Conv1D(64,1) → BN → ReLU
 Block(64→64, d=2), Block(d=4), Block(d=8)                        ~4.8k each
 GlobalAveragePooling1D → [concat exercise one-hot(4) if joint] → Dense(32, ReLU) → Dropout → Dense(1, sigmoid)
 ```
-- Estimated total is about 41k parameters. Receptive field = 7 + 6·(1+2+4+8) = **97 frames**, so it covers the whole 100-frame rep.
+- Measured total is **38,561** trainable parameters (default config; every config in the grid is under 80k). Receptive field = 7 + 6·(1+2+4+8) = **97 frames**, so it covers the whole 100-frame rep.
 - Keras has no dilated `DepthwiseConv1D` in some versions. If needed, use `DepthwiseConv2D` on `(T,1,C)` with `dilation_rate=(d,1)`, or `SeparableConv1D(dilation_rate=d)`. Check that it converts to TFLite int8 cleanly **in week 5** with a dummy export, not at the end.
 - Test: `count_params(trainable) < 80_000` for every config in the search space.
 
@@ -206,7 +222,7 @@ GlobalAveragePooling1D → [concat exercise one-hot(4) if joint] → Dense(32, R
   - angles are recomputed **after** the geometric augmentations
 - **Nested CV** for each outer fold (the DeepRehabPile test people):
   - Inner split: group-k-fold *by person* on the training people (k = min(3, n_people)).
-  - Grid (keep it small, ≈16 configs): filters ∈ {32, 48, 64}, kernel ∈ {5, 7}, dropout ∈ {0.1, 0.3}, lr ∈ {1e-3, 3e-3}, restricted to configs under 80k parameters.
+  - Grid (**8 configs**, chosen to keep the run to about half a day on CPU): filters ∈ {32, 64}, kernel = 7, dropout ∈ {0.1, 0.3}, lr ∈ {1e-3, 3e-3}. Each is checked to be under 80k parameters. The full 24-config grid (filters {32, 48, 64} × kernel {5, 7} × dropout × lr) would take about 1.5–2 days; widen to it only if the 8-config results land near the targets.
   - Each config × inner fold × 2 seeds is early-stopped on the inner validation fold. Record its best epoch and its out-of-fold probabilities.
   - Pick the config with the best mean inner **F2** (weights sensitivity).
   - Threshold: on the pooled inner out-of-fold probabilities, the threshold that maximises F2. Store it per fold.

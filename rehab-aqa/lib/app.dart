@@ -25,7 +25,7 @@ class RyoApp extends ConsumerWidget {
         ? buildElderlyTheme()
         : buildRyoTheme(highContrast: settings.highContrast);
     return MaterialApp(
-      title: 'RYO',
+      title: 'RehabLens',
       debugShowCheckedModeBanner: false,
       theme: theme,
       home: const _RootShell(),

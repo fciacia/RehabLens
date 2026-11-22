@@ -1,0 +1,24 @@
+# conda env create -f ml/environment.yml && conda activate rehablens && pip install -e ml
+name: rehablens
+channels: [conda-forge]
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - tensorflow>=2.18,<2.21
+      - keras>=3.6
+      - numpy>=2.0,<2.5
+      - scipy
+      - pandas>=2.2,<2.4
+      - scikit-learn>=1.6,<1.9
+      - matplotlib>=3.9,<3.11
+      - statsmodels
+      - mediapipe
+      - opencv-python
+      - tqdm
+      - pyyaml
+      - pytest
+      # DeepRehabPile re-runs (LITEMV, MotionGRU, ST-GCN)
+      - aeon==1.4.0
+      - hydra-core==1.3.2
+      - omegaconf==2.3.0

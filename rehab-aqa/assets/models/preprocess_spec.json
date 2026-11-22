@@ -1,0 +1,190 @@
+{
+ "version": 1,
+ "joints": [
+  "l_shoulder",
+  "r_shoulder",
+  "l_elbow",
+  "r_elbow",
+  "l_wrist",
+  "r_wrist",
+  "l_hip",
+  "r_hip",
+  "l_knee",
+  "r_knee",
+  "l_ankle",
+  "r_ankle"
+ ],
+ "mlkit_index": [
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28
+ ],
+ "conf_threshold": 0.5,
+ "max_gap_frames": 5,
+ "max_missing_frac": 0.2,
+ "target_hz": 30.0,
+ "pre_pad_frames": 15,
+ "butter": {
+  "order": 4,
+  "cutoff_hz": 6.0,
+  "sos": [
+   [
+    0.046582906636443676,
+    0.09316581327288735,
+    0.046582906636443676,
+    1.0,
+    -0.32897567737095285,
+    0.06458765491644297
+   ],
+   [
+    1.0,
+    2.0,
+    1.0,
+    1.0,
+    -0.4531195206523847,
+    0.4663255707632367
+   ]
+  ],
+  "zi": [
+   [
+    0.20671860589126934,
+    0.03022275595549069
+   ],
+   [
+    0.746698487472287,
+    -0.21302405823552378
+   ]
+  ]
+ },
+ "rotation_ref_frames": 10,
+ "out_frames": 100,
+ "dims": 3,
+ "channels": 45,
+ "angles": [
+  {
+   "name": "l_elbow",
+   "a": "l_shoulder",
+   "b": "l_elbow",
+   "c": "l_wrist"
+  },
+  {
+   "name": "r_elbow",
+   "a": "r_shoulder",
+   "b": "r_elbow",
+   "c": "r_wrist"
+  },
+  {
+   "name": "l_shoulder",
+   "a": "l_elbow",
+   "b": "l_shoulder",
+   "c": "l_hip"
+  },
+  {
+   "name": "r_shoulder",
+   "a": "r_elbow",
+   "b": "r_shoulder",
+   "c": "r_hip"
+  },
+  {
+   "name": "l_hip",
+   "a": "l_shoulder",
+   "b": "l_hip",
+   "c": "l_knee"
+  },
+  {
+   "name": "r_hip",
+   "a": "r_shoulder",
+   "b": "r_hip",
+   "c": "r_knee"
+  },
+  {
+   "name": "l_knee",
+   "a": "l_hip",
+   "b": "l_knee",
+   "c": "l_ankle"
+  },
+  {
+   "name": "r_knee",
+   "a": "r_hip",
+   "b": "r_knee",
+   "c": "r_ankle"
+  },
+  {
+   "name": "trunk_lean",
+   "type": "vertical",
+   "from": "mid_hip",
+   "to": "mid_shoulder"
+  }
+ ],
+ "zscore": {
+  "mean": null,
+  "std": null
+ },
+ "exercises": {
+  "deep_squat": {
+   "threshold": 0.5,
+   "cue_ref": {},
+   "segmenter": {
+    "signal": "mean_knee",
+    "inverted": false,
+    "start": "up",
+    "enter_deg": 150.0,
+    "bottom_deg": 110.0,
+    "exit_deg": 155.0,
+    "min_rep_ms": 800,
+    "max_rep_ms": 10000
+   }
+  },
+  "inline_lunge": {
+   "threshold": 0.5,
+   "cue_ref": {},
+   "segmenter": {
+    "signal": "front_knee",
+    "inverted": false,
+    "start": "up",
+    "enter_deg": 150.0,
+    "bottom_deg": 120.0,
+    "exit_deg": 155.0,
+    "min_rep_ms": 800,
+    "max_rep_ms": 10000
+   }
+  },
+  "sit_to_stand": {
+   "threshold": 0.5,
+   "cue_ref": {},
+   "segmenter": {
+    "signal": "mean_knee",
+    "inverted": true,
+    "start": "down",
+    "enter_deg": 110.0,
+    "bottom_deg": 150.0,
+    "exit_deg": 105.0,
+    "min_rep_ms": 800,
+    "max_rep_ms": 10000
+   }
+  },
+  "shoulder_abduction": {
+   "threshold": 0.5,
+   "cue_ref": {},
+   "segmenter": {
+    "signal": "max_shoulder",
+    "inverted": true,
+    "start": "up",
+    "enter_deg": 40.0,
+    "bottom_deg": 110.0,
+    "exit_deg": 35.0,
+    "min_rep_ms": 800,
+    "max_rep_ms": 12000
+   }
+  }
+ }
+}

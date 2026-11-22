@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rehab"
+version = "0.1.0"
+description = "Offline pipeline for on-device rehabilitation action quality assessment (FYP, Universiti Malaya)."
+requires-python = ">=3.11,<3.13"
+
+[tool.setuptools.packages.find]
+include = ["rehab*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

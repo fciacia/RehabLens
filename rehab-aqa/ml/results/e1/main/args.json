@@ -1,0 +1,12 @@
+{
+ "models": "tcn",
+ "exercises": "deep_squat,inline_lunge,sit_to_stand,shoulder_abduction",
+ "dims": 3,
+ "features": "both",
+ "small": false,
+ "seeds": 2,
+ "max_epochs": 150,
+ "patience": 30,
+ "folds": "",
+ "tag": "main"
+}

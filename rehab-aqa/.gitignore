@@ -23,7 +23,16 @@ GoogleService-Info.plist
 # macOS
 .DS_Store
 
-# Python (backend proxy)
+# Python (ml pipeline)
 __pycache__/
 *.py[cod]
 *.pyo
+.ipynb_checkpoints/
+*.egg-info/
+.pytest_cache/
+
+# ML data and raw results (public datasets are downloaded, never committed)
+ml/data/
+ml/results/raw/
+ml/deeprehabpile/
+*.tflite.tmp

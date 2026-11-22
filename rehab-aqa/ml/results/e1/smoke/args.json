@@ -1,0 +1,12 @@
+{
+ "models": "tcn",
+ "exercises": "deep_squat",
+ "dims": 3,
+ "features": "both",
+ "small": true,
+ "seeds": 1,
+ "max_epochs": 40,
+ "patience": 15,
+ "folds": "0",
+ "tag": "smoke"
+}
