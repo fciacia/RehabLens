@@ -1,0 +1,13 @@
+model,exercise,fold,rep_id,subject,y,p,threshold,config,epochs,inner_f2
+tcn,inline_lunge,5,uiprmd/IL/uiprmd_s01/090,uiprmd_s01,0,0.31664222478866577,0.19248855113983154,"{""filters"": 32, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.003}",5,0.8574181117533719
+tcn,inline_lunge,5,uiprmd/IL/uiprmd_s01/091,uiprmd_s01,0,0.4099419116973877,0.19248855113983154,"{""filters"": 32, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.003}",5,0.8574181117533719
+tcn,inline_lunge,5,uiprmd/IL/uiprmd_s01/092,uiprmd_s01,0,0.36844244599342346,0.19248855113983154,"{""filters"": 32, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.003}",5,0.8574181117533719
+tcn,inline_lunge,5,uiprmd/IL/uiprmd_s01/093,uiprmd_s01,0,0.5474340915679932,0.19248855113983154,"{""filters"": 32, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.003}",5,0.8574181117533719
+tcn,inline_lunge,5,uiprmd/IL/uiprmd_s01/094,uiprmd_s01,0,0.48552197217941284,0.19248855113983154,"{""filters"": 32, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.003}",5,0.8574181117533719
+tcn,inline_lunge,5,uiprmd/IL/uiprmd_s01/095,uiprmd_s01,0,0.3471147119998932,0.19248855113983154,"{""filters"": 32, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.003}",5,0.8574181117533719
+tcn,inline_lunge,5,uiprmd/IL/uiprmd_s01/096,uiprmd_s01,1,0.2833477854728699,0.19248855113983154,"{""filters"": 32, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.003}",5,0.8574181117533719
+tcn,inline_lunge,5,uiprmd/IL/uiprmd_s01/097,uiprmd_s01,1,0.9818134307861328,0.19248855113983154,"{""filters"": 32, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.003}",5,0.8574181117533719
+tcn,inline_lunge,5,uiprmd/IL/uiprmd_s01/098,uiprmd_s01,1,0.9133065342903137,0.19248855113983154,"{""filters"": 32, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.003}",5,0.8574181117533719
+tcn,inline_lunge,5,uiprmd/IL/uiprmd_s01/099,uiprmd_s01,1,0.8836354613304138,0.19248855113983154,"{""filters"": 32, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.003}",5,0.8574181117533719
+tcn,inline_lunge,5,uiprmd/IL/uiprmd_s01/100,uiprmd_s01,1,0.7181645631790161,0.19248855113983154,"{""filters"": 32, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.003}",5,0.8574181117533719
+tcn,inline_lunge,5,uiprmd/IL/uiprmd_s01/101,uiprmd_s01,1,0.7090636491775513,0.19248855113983154,"{""filters"": 32, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.003}",5,0.8574181117533719
