@@ -1,0 +1,4 @@
+[tcn] deep_squat: x=(180, 100, 45)
+  fold 0: cfg={'filters': 64, 'kernel_size': 7, 'dropout': 0.1, 'lr': 0.001} thr=0.290 innerF2=0.921 epochs=41 (721s)
+  fold 1: cfg={'filters': 32, 'kernel_size': 7, 'dropout': 0.3, 'lr': 0.003} thr=0.230 innerF2=0.963 epochs=23 (749s)
+  fold 2: cfg={'filters': 64, 'kernel_size': 7, 'dropout': 0.3, 'lr': 0.001} thr=0.204 innerF2=0.935 epochs=25 (716s)

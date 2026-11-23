@@ -54,6 +54,8 @@ def main() -> None:
 
     out_dir = RESULTS_DIR / "e1" / args.tag
     out_dir.mkdir(parents=True, exist_ok=True)
+    part_dir = out_dir / "partial"
+    part_dir.mkdir(exist_ok=True)
     (out_dir / "args.json").write_text(json.dumps(vars(args), indent=1))
     only_folds = {int(f) for f in args.folds.split(",") if f}
 
@@ -68,14 +70,21 @@ def main() -> None:
             for fold in fs.folds:
                 if only_folds and fold.k not in only_folds:
                     continue
+                # One file per finished fold, so a crashed run resumes where it stopped.
+                part = part_dir / f"{model_name}_{ex}_fold{fold.k}.csv"
+                if part.exists():
+                    print(f"  fold {fold.k}: resumed from {part.name}")
+                    rows.extend(pd.read_csv(part).to_dict("records"))
+                    continue
                 r = run_outer_fold(adapter, x, fs.y, fs.subjects, fold, small=args.small, n_seeds=args.seeds)
-                for i, p in zip(r.test_idx, r.p_test):
-                    rows.append({
-                        "model": model_name, "exercise": ex, "fold": r.fold, "rep_id": fs.rep_ids[i],
-                        "subject": fs.subjects[i], "y": int(fs.y[i]), "p": float(p),
-                        "threshold": r.threshold, "config": json.dumps(r.config), "epochs": r.epochs,
-                        "inner_f2": r.inner_score,
-                    })
+                fold_rows = [{
+                    "model": model_name, "exercise": ex, "fold": r.fold, "rep_id": fs.rep_ids[i],
+                    "subject": fs.subjects[i], "y": int(fs.y[i]), "p": float(p),
+                    "threshold": r.threshold, "config": json.dumps(r.config), "epochs": r.epochs,
+                    "inner_f2": r.inner_score,
+                } for i, p in zip(r.test_idx, r.p_test)]
+                pd.DataFrame(fold_rows).to_csv(part, index=False)
+                rows.extend(fold_rows)
         df = pd.DataFrame(rows)
         path = out_dir / f"{model_name}_predictions.csv"
         df.to_csv(path, index=False)
