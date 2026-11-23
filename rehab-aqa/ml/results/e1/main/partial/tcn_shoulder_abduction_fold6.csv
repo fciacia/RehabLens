@@ -1,0 +1,19 @@
+model,exercise,fold,rep_id,subject,y,p,threshold,config,epochs,inner_f2
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/108,uiprmd_s01,0,0.928939700126648,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/109,uiprmd_s01,0,0.986030101776123,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/110,uiprmd_s01,0,0.8815475702285767,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/111,uiprmd_s01,0,0.7857037782669067,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/112,uiprmd_s01,0,0.6876084804534912,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/113,uiprmd_s01,0,0.9865239262580872,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/114,uiprmd_s01,0,0.9858239889144897,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/115,uiprmd_s01,0,0.8159846067428589,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/116,uiprmd_s01,0,0.7575438618659973,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/117,uiprmd_s01,1,0.9975121021270752,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/118,uiprmd_s01,1,0.9967209100723267,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/119,uiprmd_s01,1,0.9952225685119629,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/120,uiprmd_s01,1,0.9878203272819519,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/121,uiprmd_s01,1,0.9955142736434937,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/122,uiprmd_s01,1,0.999358057975769,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/123,uiprmd_s01,1,0.9996076822280884,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/124,uiprmd_s01,1,0.999686598777771,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352
+tcn,shoulder_abduction,6,uiprmd/SSA/uiprmd_s01/125,uiprmd_s01,1,0.9998234510421753,0.19755472242832184,"{""filters"": 64, ""kernel_size"": 7, ""dropout"": 0.1, ""lr"": 0.001}",75,0.9528130671506352

@@ -24,3 +24,5 @@
   fold 3: cfg={'filters': 32, 'kernel_size': 7, 'dropout': 0.3, 'lr': 0.003} thr=0.210 innerF2=0.890 epochs=10 (1413s)
   fold 4: cfg={'filters': 32, 'kernel_size': 7, 'dropout': 0.1, 'lr': 0.001} thr=0.179 innerF2=0.882 epochs=18 (1645s)
   fold 5: cfg={'filters': 32, 'kernel_size': 7, 'dropout': 0.1, 'lr': 0.001} thr=0.219 innerF2=0.934 epochs=25 (1645s)
+  fold 6: cfg={'filters': 64, 'kernel_size': 7, 'dropout': 0.1, 'lr': 0.001} thr=0.198 innerF2=0.953 epochs=75 (3181s)
+[tcn] wrote /Users/a1357/Documents/GitHub/RehabLens/rehab-aqa/ml/results/e1/main/tcn_predictions.csv (576 rows, 28430s)
