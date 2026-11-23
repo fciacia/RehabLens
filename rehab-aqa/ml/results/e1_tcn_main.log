@@ -13,3 +13,4 @@
   fold 5: cfg={'filters': 32, 'kernel_size': 7, 'dropout': 0.1, 'lr': 0.003} thr=0.192 innerF2=0.857 epochs=5 (694s)
 [tcn] sit_to_stand: x=(168, 100, 45)
   fold 0: cfg={'filters': 32, 'kernel_size': 7, 'dropout': 0.3, 'lr': 0.001} thr=0.128 innerF2=0.910 epochs=51 (921s)
+  fold 1: cfg={'filters': 64, 'kernel_size': 7, 'dropout': 0.1, 'lr': 0.003} thr=0.096 innerF2=0.875 epochs=7 (1649s)
